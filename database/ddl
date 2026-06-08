@@ -1,1 +1,126 @@
+CREATE TABLE TB_USUARIO (
+    id_usuario INT PRIMARY KEY,
+    nm_usuario VARCHAR(25) NOT NULL,
+    ds_email VARCHAR(80) NOT NULL,
+    ds_senha VARCHAR(50) NOT NULL,
+    tp_perfil CHAR(1) NOT NULL
+);
 
+CREATE TABLE TB_CLIENTE (
+    id_cliente INT PRIMARY KEY,
+    dt_nascimento DATE NOT NULL,
+    st_verificado CHAR(1) NOT NULL,
+    FOREIGN KEY (id_cliente) REFERENCES TB_USUARIO(id_usuario)
+);
+
+CREATE TABLE TB_PRODUTOR (
+    id_produtor INT PRIMARY KEY,
+    nr_cpf CHAR(11) NOT NULL,
+    nr_telefone CHAR(10),
+    FOREIGN KEY (id_produtor) REFERENCES TB_USUARIO(id_usuario)
+);
+
+CREATE TABLE TB_CATEGORIA (
+    id_categoria INT PRIMARY KEY,
+    nm_categoria VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE TB_PRODUTO (
+    id_produto INT PRIMARY KEY,
+    id_categoria INT NOT NULL,
+    nm_produto VARCHAR(50) NOT NULL,
+    FOREIGN KEY (id_categoria) REFERENCES TB_CATEGORIA(id_categoria)
+);
+
+CREATE TABLE TB_PROPRIEDADE (
+    id_propriedade INT PRIMARY KEY,
+    id_produtor INT NOT NULL,
+    nm_propriedade VARCHAR(50) NOT NULL,
+    cidade VARCHAR(35) NOT NULL,
+    bairro VARCHAR(65) NOT NULL,
+    rua VARCHAR(45) NOT NULL,
+    numero INT NOT NULL,
+    tipo_local_venda VARCHAR(80),
+    FOREIGN KEY (id_produtor) REFERENCES TB_PRODUTOR(id_produtor)
+);
+
+CREATE TABLE TB_DESPESA (
+    id_despesa INT PRIMARY KEY,
+    id_produtor INT NOT NULL,
+    ds_despesa TEXT NOT NULL,
+    vl_despesa DECIMAL(7,2) NOT NULL,
+    dt_despesa DATE NOT NULL,
+    FOREIGN KEY (id_produtor) REFERENCES TB_PRODUTOR(id_produtor)
+);
+
+CREATE TABLE TB_A_PRODUTOR_PRODUTO (
+    id_produtor_produto INT PRIMARY KEY,
+    id_produtor INT NOT NULL,
+    id_produto INT NOT NULL,
+    qt_produto INT NOT NULL,
+    vl_produto DECIMAL(6,2) NOT NULL,
+    FOREIGN KEY (id_produtor) REFERENCES TB_PRODUTOR(id_produtor),
+    FOREIGN KEY (id_produto) REFERENCES TB_PRODUTO(id_produto)
+);
+
+CREATE TABLE TB_FATURAMENTO (
+    id_faturamento INT PRIMARY KEY,
+    id_produtor_produto INT NOT NULL,
+    vl_recebido DECIMAL(7,2) NOT NULL,
+    dt_faturamento DATE NOT NULL,
+    FOREIGN KEY (id_produtor_produto)
+        REFERENCES TB_A_PRODUTOR_PRODUTO(id_produtor_produto)
+);
+
+CREATE TABLE TB_ASSINATURA (
+    id_assinatura INT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    tp_plano VARCHAR(20) NOT NULL,
+    dt_inicio DATE NOT NULL,
+    dt_final DATE NOT NULL,
+    st_assinatura CHAR(1) NOT NULL,
+    FOREIGN KEY (id_usuario) REFERENCES TB_USUARIO(id_usuario)
+);
+
+CREATE TABLE TB_CONVERSA (
+    id_conversa INT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    id_produtor INT NOT NULL,
+    dt_inicio DATE NOT NULL,
+    FOREIGN KEY (id_usuario) REFERENCES TB_USUARIO(id_usuario),
+    FOREIGN KEY (id_produtor) REFERENCES TB_PRODUTOR(id_produtor)
+);
+
+CREATE TABLE TB_MENSAGEM (
+    id_mensagem INT PRIMARY KEY,
+    id_conversa INT NOT NULL,
+    id_remetente INT NOT NULL,
+    ds_mensagem TEXT NOT NULL,
+    dt_envio DATETIME NOT NULL,
+    FOREIGN KEY (id_conversa) REFERENCES TB_CONVERSA(id_conversa),
+    FOREIGN KEY (id_remetente) REFERENCES TB_USUARIO(id_usuario)
+);
+
+CREATE TABLE TB_PEDIDO (
+    id_pedido INT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    id_produtor INT NOT NULL,
+    dt_pedido DATE NOT NULL,
+    vl_total DECIMAL(6,2) NOT NULL,
+    st_pedido CHAR(1) NOT NULL,
+    FOREIGN KEY (id_cliente) REFERENCES TB_CLIENTE(id_cliente),
+    FOREIGN KEY (id_produtor) REFERENCES TB_PRODUTOR(id_produtor)
+);
+
+CREATE TABLE TB_A_ITEM_PEDIDO (
+    id_item_pedido INT,
+    id_pedido INT,
+    id_produto INT,
+    qt_item INT NOT NULL,
+    vl_unitario DECIMAL(6,2) NOT NULL,
+    PRIMARY KEY (id_item_pedido, id_pedido, id_produto),
+    FOREIGN KEY (id_pedido) REFERENCES TB_PEDIDO(id_pedido),
+    FOREIGN KEY (id_produto) REFERENCES TB_PRODUTO(id_produto)
+);
+
+  
