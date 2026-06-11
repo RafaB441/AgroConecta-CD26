@@ -1,15 +1,20 @@
 CREATE TABLE TB_USUARIO (
-    id_usuario INT PRIMARY KEY,
+    id_usuario INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_USUARIO PRIMARY KEY,
     nm_usuario VARCHAR(25) NOT NULL,
-    ds_email VARCHAR(80) NOT NULL,
+    ds_email VARCHAR(80) NOT NULL
+        CONSTRAINT UN_usuario_email,
     ds_senha VARCHAR(50) NOT NULL,
     tp_perfil CHAR(1) NOT NULL
+        CONSTRAINT CK_usuario_perfil CHECK (tp_perfil IN ('P', 'C'))
 );
 
 CREATE TABLE TB_CLIENTE (
-    id_cliente INT PRIMARY KEY,
+    id_cliente INT IDENTITY (1,1)
+        CONSTRAINT PK_id_cliente PRIMARY KEY,
     dt_nascimento DATE NOT NULL,
-    st_verificado CHAR(1) NOT NULL,
+    st_verificado CHAR(1) NOT NULL
+        CONSTRAINT CK_cliente_verificado CHECK (st_verificado IN ('A', 'I')),
     FOREIGN KEY (id_cliente) REFERENCES TB_USUARIO(id_usuario)
 );
 
