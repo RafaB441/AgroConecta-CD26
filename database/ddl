@@ -3,59 +3,83 @@ CREATE TABLE TB_USUARIO (
         CONSTRAINT PK_ID_USUARIO PRIMARY KEY,
     nm_usuario VARCHAR(25) NOT NULL,
     ds_email VARCHAR(80) NOT NULL
-        CONSTRAINT UN_usuario_email,
+        CONSTRAINT UN_USUARIO_EMAIL UNIQUE,
     ds_senha VARCHAR(50) NOT NULL,
     tp_perfil CHAR(1) NOT NULL
-        CONSTRAINT CK_usuario_perfil CHECK (tp_perfil IN ('P', 'C'))
+        CONSTRAINT CK_USUARIO_PERFIL CHECK (tp_perfil IN ('P', 'C'))
 );
 
 CREATE TABLE TB_CLIENTE (
     id_cliente INT IDENTITY (1,1)
-        CONSTRAINT PK_id_cliente PRIMARY KEY,
+        CONSTRAINT PK_ID_CLIENTE PRIMARY KEY,
+    id_usuario INT NOT NULL,
     dt_nascimento DATE NOT NULL,
     st_verificado CHAR(1) NOT NULL
-        CONSTRAINT CK_cliente_verificado CHECK (st_verificado IN ('A', 'I')),
-    FOREIGN KEY (id_cliente) REFERENCES TB_USUARIO(id_usuario)
+        CONSTRAINT CK_CLIENTE_VERIFICADO CHECK (st_verificado IN ('A', 'I')),
+
+    CONSTRAINT FK_CLIENTE_USUARIO FOREIGN KEY (id_usuario)
+    REFERENCES TB_USUARIO (id_usuario)
 );
 
 CREATE TABLE TB_PRODUTOR (
-    id_produtor INT PRIMARY KEY,
-    nr_cpf CHAR(11) NOT NULL,
-    nr_telefone CHAR(10),
-    FOREIGN KEY (id_produtor) REFERENCES TB_USUARIO(id_usuario)
+    id_produtor INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_PRODUTOR PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    nr_cpf CHAR(11) NOT NULL
+        CONSTRAINT UN_PRODUTOR_CPF UNIQUE,
+    nr_telefone CHAR(10)
+        CONSTRAINT DF_PRODUTOR_TELEFONE DEFAULT 'S/N',
+
+    CONSTRAINT FK_PRODUTOR_USUARIO FOREIGN KEY (id_usuario)
+    REFERENCES TB_USUARIO (id_usuario)
+   
 );
 
 CREATE TABLE TB_CATEGORIA (
-    id_categoria INT PRIMARY KEY,
+    id_categoria INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_CATEGORIA PRIMARY KEY,
     nm_categoria VARCHAR(30) NOT NULL
 );
 
 CREATE TABLE TB_PRODUTO (
-    id_produto INT PRIMARY KEY,
+    id_produto INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_PRODUTOR PRIMARY KEY,
     id_categoria INT NOT NULL,
     nm_produto VARCHAR(50) NOT NULL,
-    FOREIGN KEY (id_categoria) REFERENCES TB_CATEGORIA(id_categoria)
+
+    CONSTRAINT FK_PRODUTO_CATEGORIA FOREIGN KEY (id_categoria)
+    REFERENCES TB_CATEGORIA (id_categoria)
 );
 
 CREATE TABLE TB_PROPRIEDADE (
-    id_propriedade INT PRIMARY KEY,
+    id_propriedade INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_PROPRIEDADE PRIMARY KEY,
     id_produtor INT NOT NULL,
-    nm_propriedade VARCHAR(50) NOT NULL,
-    cidade VARCHAR(35) NOT NULL,
-    bairro VARCHAR(65) NOT NULL,
-    rua VARCHAR(45) NOT NULL,
-    numero INT NOT NULL,
+    nm_propriedade VARCHAR(50) NOT NULL
+        CONSTRAINT UN_PROPRIEDADE_NOME UNIQUE,
+    nm_cidade VARCHAR(35) NOT NULL,
+    nm_bairro VARCHAR(65) NOT NULL,
+    nm_rua VARCHAR(45) NOT NULL,
+    nr_casa INT NOT NULL
+        CONSTRAINT DF_PROPRIEDADE_CASA DEFAULT 'S/N',
     tipo_local_venda VARCHAR(80),
-    FOREIGN KEY (id_produtor) REFERENCES TB_PRODUTOR(id_produtor)
+
+    CONSTRAINT FK_PROPRIEDADE_PRODUTOR FOREIGN KEY (id_produtor)
+    REFERENCES TB_PRODUTOR (id_produtor)
 );
 
 CREATE TABLE TB_DESPESA (
-    id_despesa INT PRIMARY KEY,
+    id_despesa INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_DESPESA PRIMARY KEY,
     id_produtor INT NOT NULL,
-    ds_despesa TEXT NOT NULL,
-    vl_despesa DECIMAL(7,2) NOT NULL,
+    ds_despesa TEXT NOT NULL
+        CONSTRAINT DF_DESPESA_DESCRICAO DEFAULT 'N/I',
+    vl_despesa DECIMAL(7,2) NOT NULL
+        CONSTRAINT CK_DESPESA_VALOR CHECK (vl_despesa IN ('+', '-')),
     dt_despesa DATE NOT NULL,
-    FOREIGN KEY (id_produtor) REFERENCES TB_PRODUTOR(id_produtor)
+
+    CONSTRAINT FK_DESPESA_PRODUTOR FOREIGN KEY (id_produtor)
+    REFERENCES TB_PRODUTOR (id_produtor)
 );
 
 CREATE TABLE TB_A_PRODUTOR_PRODUTO (
