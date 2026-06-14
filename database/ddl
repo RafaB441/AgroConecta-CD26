@@ -83,8 +83,7 @@ CREATE TABLE TB_DESPESA (
 );
 
 CREATE TABLE TB_A_PRODUTOR_PRODUTO (
-    id_produtor_produto INT IDENTITY (1,1)
-        CONSTRAINT PK_PRODUTOR_PRODUTO PRIMARY KEY,
+    id_produtor_produto INT IDENTITY (1,1),
     id_produtor INT NOT NULL,
     id_produto INT NOT NULL,
     qt_produto INT NOT NULL
@@ -92,6 +91,7 @@ CREATE TABLE TB_A_PRODUTOR_PRODUTO (
     vl_produto DECIMAL(6,2) NOT NULL
         CONSTRAINT CK_PRODUTOR_PRODUTO_VALOR CHECK (vl_produto IN ('+', '-')),
 
+    CONSTRAINT PK_PRODUTOR_PRODUTO PRIMARY KEY (id_produtor_produto, id_produtor, id_produto),
     CONSTRAINT FK_PRODUTOR_PRODUTO_PRODUTOR FOREIGN KEY (id_produtor)
         REFERENCES TB_PRODUTOR (id_produtor),
     CONSTRAINT FK_PRODUTOR_PRODUTO_PRODUTO FOREIGN KEY (id_produto)
@@ -169,17 +169,18 @@ CREATE TABLE TB_PEDIDO (
 );
 
 CREATE TABLE TB_A_ITEM_PEDIDO (
-    id_item_pedido INT IDENTITY (1,1)
-        CONSTRAINT PK_ID_ITEM_PEDIDO PRIMARY KEY,
+    id_item_pedido INT IDENTITY (1,1),
     id_pedido INT,
     id_produto INT,
     qt_item INT NOT NULL,
     vl_unitario DECIMAL(6,2) NOT NULL
 CONSTRAINT CK_ITEM_PEDIDO_UNITARIO CHECK (vl_unitario IN ('+', '-')),
 
-    PRIMARY KEY (id_item_pedido, id_pedido, id_produto),
-    FOREIGN KEY (id_pedido) REFERENCES TB_PEDIDO(id_pedido),
-    FOREIGN KEY (id_produto) REFERENCES TB_PRODUTO(id_produto)
+    CONSTRAINT PK_ITEM_PEDIDO PRIMARY KEY (id_item_pedido, id_pedido, id_produto),
+    CONSTRAINT FK_ITEM_PEDIDO_PEDIDO FOREIGN KEY (id_pedido)
+        REFERENCES TB_PEDIDO (id_pedido),
+    CONSTRAINT FK_ITEM_PEDIDO_PRODUTO FOREIGN KEY (id_produto)
+        REFERENCES TB_PRODUTO (id_produto)
 );
 
   
