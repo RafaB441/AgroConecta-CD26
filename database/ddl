@@ -18,7 +18,7 @@ CREATE TABLE TB_CLIENTE (
         CONSTRAINT CK_CLIENTE_VERIFICADO CHECK (st_verificado IN ('A', 'I')),
 
     CONSTRAINT FK_CLIENTE_USUARIO FOREIGN KEY (id_usuario)
-    REFERENCES TB_USUARIO (id_usuario)
+        REFERENCES TB_USUARIO (id_usuario)
 );
 
 CREATE TABLE TB_PRODUTOR (
@@ -31,7 +31,7 @@ CREATE TABLE TB_PRODUTOR (
         CONSTRAINT DF_PRODUTOR_TELEFONE DEFAULT 'S/N',
 
     CONSTRAINT FK_PRODUTOR_USUARIO FOREIGN KEY (id_usuario)
-    REFERENCES TB_USUARIO (id_usuario)
+        REFERENCES TB_USUARIO (id_usuario)
    
 );
 
@@ -48,7 +48,7 @@ CREATE TABLE TB_PRODUTO (
     nm_produto VARCHAR(50) NOT NULL,
 
     CONSTRAINT FK_PRODUTO_CATEGORIA FOREIGN KEY (id_categoria)
-    REFERENCES TB_CATEGORIA (id_categoria)
+        REFERENCES TB_CATEGORIA (id_categoria)
 );
 
 CREATE TABLE TB_PROPRIEDADE (
@@ -65,7 +65,7 @@ CREATE TABLE TB_PROPRIEDADE (
     tipo_local_venda VARCHAR(80),
 
     CONSTRAINT FK_PROPRIEDADE_PRODUTOR FOREIGN KEY (id_produtor)
-    REFERENCES TB_PRODUTOR (id_produtor)
+        REFERENCES TB_PRODUTOR (id_produtor)
 );
 
 CREATE TABLE TB_DESPESA (
@@ -79,74 +79,104 @@ CREATE TABLE TB_DESPESA (
     dt_despesa DATE NOT NULL,
 
     CONSTRAINT FK_DESPESA_PRODUTOR FOREIGN KEY (id_produtor)
-    REFERENCES TB_PRODUTOR (id_produtor)
+        REFERENCES TB_PRODUTOR (id_produtor)
 );
 
 CREATE TABLE TB_A_PRODUTOR_PRODUTO (
-    id_produtor_produto INT PRIMARY KEY,
+    id_produtor_produto INT IDENTITY (1,1)
+        CONSTRAINT PK_PRODUTOR_PRODUTO PRIMARY KEY,
     id_produtor INT NOT NULL,
     id_produto INT NOT NULL,
-    qt_produto INT NOT NULL,
-    vl_produto DECIMAL(6,2) NOT NULL,
-    FOREIGN KEY (id_produtor) REFERENCES TB_PRODUTOR(id_produtor),
-    FOREIGN KEY (id_produto) REFERENCES TB_PRODUTO(id_produto)
+    qt_produto INT NOT NULL
+        CONSTRAINT CK_PRODUTOR_PRODUTO_QUANTIDADE CHECK (qt_produto IN ('+', '-')),
+    vl_produto DECIMAL(6,2) NOT NULL
+        CONSTRAINT CK_PRODUTOR_PRODUTO_VALOR CHECK (vl_produto IN ('+', '-')),
+
+    CONSTRAINT FK_PRODUTOR_PRODUTO_PRODUTOR FOREIGN KEY (id_produtor)
+        REFERENCES TB_PRODUTOR (id_produtor),
+    CONSTRAINT FK_PRODUTOR_PRODUTO_PRODUTO FOREIGN KEY (id_produto)
+        REFERENCES TB_PRODUTO (id_produto)
 );
 
 CREATE TABLE TB_FATURAMENTO (
-    id_faturamento INT PRIMARY KEY,
+    id_faturamento INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_FATURAMENTO PRIMARY KEY,
     id_produtor_produto INT NOT NULL,
-    vl_recebido DECIMAL(7,2) NOT NULL,
+    vl_recebido DECIMAL(7,2) NOT NULL
+        CONSTRAINT CK_FATURAMENTO_RECEBIDO CHECK (vl_recebido IN ('+', '-')),
     dt_faturamento DATE NOT NULL,
-    FOREIGN KEY (id_produtor_produto)
-        REFERENCES TB_A_PRODUTOR_PRODUTO(id_produtor_produto)
+
+    CONSTRAINT FK_FATURAMENTO_PRODUTOR_PRODUTO FOREIGN KEY (id_produtor_produto)
+        REFERENCES TB_A_PRODUTOR_PRODUTO (id_produtor_produto)
 );
 
 CREATE TABLE TB_ASSINATURA (
-    id_assinatura INT PRIMARY KEY,
+    id_assinatura INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_ASSINATURA PRIMARY KEY,
     id_usuario INT NOT NULL,
-    tp_plano VARCHAR(20) NOT NULL,
+    tp_plano CHAR(1) NOT NULL
+        CONSTRAINT CK_ASSINATURA_PLANO CHECK (tp_plano IN ('P', 'G')),
     dt_inicio DATE NOT NULL,
     dt_final DATE NOT NULL,
-    st_assinatura CHAR(1) NOT NULL,
-    FOREIGN KEY (id_usuario) REFERENCES TB_USUARIO(id_usuario)
+    st_assinatura CHAR(1) NOT NULL
+        CONSTRAINT CK_ASSINATURA_STATUS CHECK (st_assinatura IN ('A', 'I')),
+
+    CONSTRAINT FK_ASSINATURA_USUARIO FOREIGN KEY (id_usuario)
+        REFERENCES TB_USUARIO (id_usuario)
 );
 
 CREATE TABLE TB_CONVERSA (
-    id_conversa INT PRIMARY KEY,
+    id_conversa INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_CONVERSA PRIMARY KEY,
     id_usuario INT NOT NULL,
     id_produtor INT NOT NULL,
     dt_inicio DATE NOT NULL,
-    FOREIGN KEY (id_usuario) REFERENCES TB_USUARIO(id_usuario),
-    FOREIGN KEY (id_produtor) REFERENCES TB_PRODUTOR(id_produtor)
+
+    CONSTRAINT FK_CONVERSA_USUARIO FOREIGN KEY (id_usuario)
+        REFERENCES TB_USUARIO (id_usuario),
+    CONSTRAINT FK_CONVERSA_PRODUTOR FOREIGN KEY (id_produtor)
+        REFERENCES TB_PRODUTOR (id_produtor)
 );
 
 CREATE TABLE TB_MENSAGEM (
-    id_mensagem INT PRIMARY KEY,
+    id_mensagem INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_MENSAGEM PRIMARY KEY,
     id_conversa INT NOT NULL,
     id_remetente INT NOT NULL,
     ds_mensagem TEXT NOT NULL,
     dt_envio DATETIME NOT NULL,
-    FOREIGN KEY (id_conversa) REFERENCES TB_CONVERSA(id_conversa),
-    FOREIGN KEY (id_remetente) REFERENCES TB_USUARIO(id_usuario)
+
+    CONSTRAINT FK_MENSAGEM_CONVERSA FOREIGN KEY (id_conversa)
+        REFERENCES TB_CONVERSA (id_conversa),
+    CONSTRAINT FK_MENSAGEM_REMETENTE FOREIGN KEY (id_remetente)
+        REFERENCES TB_USUARIO (id_usuario)
 );
 
 CREATE TABLE TB_PEDIDO (
-    id_pedido INT PRIMARY KEY,
+    id_pedido INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_PEDIDO PRIMARY KEY,
     id_cliente INT NOT NULL,
     id_produtor INT NOT NULL,
     dt_pedido DATE NOT NULL,
-    vl_total DECIMAL(6,2) NOT NULL,
+    vl_total DECIMAL(6,2) NOT NULL
+        CONSTRAINT CK_PEDIDO_TOTAL CHECK (vl_total IN ('+', '-')),
     st_pedido CHAR(1) NOT NULL,
-    FOREIGN KEY (id_cliente) REFERENCES TB_CLIENTE(id_cliente),
-    FOREIGN KEY (id_produtor) REFERENCES TB_PRODUTOR(id_produtor)
+
+    CONSTRAINT FK_PEDIDO_CLIENTE FOREIGN KEY (id_cliente)
+        REFERENCES TB_CLIENTE (id_cliente),
+    CONSTRAINT FK_PEDIDO_PRODUTOR FOREIGN KEY (id_produtor)
+        REFERENCES TB_PRODUTOR (id_produtor)
 );
 
 CREATE TABLE TB_A_ITEM_PEDIDO (
-    id_item_pedido INT,
+    id_item_pedido INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_ITEM_PEDIDO PRIMARY KEY,
     id_pedido INT,
     id_produto INT,
     qt_item INT NOT NULL,
-    vl_unitario DECIMAL(6,2) NOT NULL,
+    vl_unitario DECIMAL(6,2) NOT NULL
+CONSTRAINT CK_ITEM_PEDIDO_UNITARIO CHECK (vl_unitario IN ('+', '-')),
+
     PRIMARY KEY (id_item_pedido, id_pedido, id_produto),
     FOREIGN KEY (id_pedido) REFERENCES TB_PEDIDO(id_pedido),
     FOREIGN KEY (id_produto) REFERENCES TB_PRODUTO(id_produto)
