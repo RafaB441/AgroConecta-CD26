@@ -51,32 +51,47 @@ CREATE TABLE TB_PRODUTO (
         REFERENCES TB_CATEGORIA (id_categoria)
 );
 
-CREATE TABLE TB_PROPRIEDADE (
-    id_propriedade INT IDENTITY (1,1)
-        CONSTRAINT PK_ID_PROPRIEDADE PRIMARY KEY,
-    id_produtor INT NOT NULL,
-    nm_propriedade VARCHAR(50) NOT NULL
-        CONSTRAINT UN_PROPRIEDADE_NOME UNIQUE,
+CREATE TABLE TB_ENDERECO (
+    id_endereco INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_ENDERECO PRIMARY KEY,
     nm_cidade VARCHAR(35) NOT NULL,
     nm_bairro VARCHAR(65) NOT NULL,
     nm_rua VARCHAR(45) NOT NULL,
     nr_casa INT NOT NULL
         CONSTRAINT DF_PROPRIEDADE_CASA DEFAULT 'S/N',
+    nr_longitude DECIMAL(9,6) NOT NULL
+        CONSTRAINT CK_PROPRIEDADE_LONGITUDE CHECK (nr_longitude IN ('+', '-'),
+    nr_latitude DECIMAL(9,6) NOT NULL
+        CONSTRAINT CK_PROPRIEDADE_LATITUDE CHECK (nr_latitude IN ('+', '-')
+);
+
+CREATE TABLE TB_PROPRIEDADE (
+    id_propriedade INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_PROPRIEDADE PRIMARY KEY,
+    id_produtor INT NOT NULL,
+    id_endereco INT NOT NULL,
+    nm_propriedade VARCHAR(50) NOT NULL
+        CONSTRAINT UN_PROPRIEDADE_NOME UNIQUE,
+    tm_propriedade DECIMAL (7,2)
     tipo_local_venda VARCHAR(80),
 
     CONSTRAINT FK_PROPRIEDADE_PRODUTOR FOREIGN KEY (id_produtor)
-        REFERENCES TB_PRODUTOR (id_produtor)
+        REFERENCES TB_PRODUTOR (id_produtor),
+    CONSTRAINT FK_PROPRIEDADE_ENDERECO FOREIGN KEY (id_endereco)
+        REFERENCES TB_ENDERECO (id_endereco)
+
 );
 
 CREATE TABLE TB_DESPESA (
     id_despesa INT IDENTITY (1,1)
         CONSTRAINT PK_ID_DESPESA PRIMARY KEY,
     id_produtor INT NOT NULL,
-    ds_despesa TEXT NOT NULL
+    ds_despesa TEXT 
         CONSTRAINT DF_DESPESA_DESCRICAO DEFAULT 'N/I',
     vl_despesa DECIMAL(7,2) NOT NULL
         CONSTRAINT CK_DESPESA_VALOR CHECK (vl_despesa IN ('+', '-')),
     dt_despesa DATE NOT NULL,
+    ct_despesa VARCHAR (20) NOT NULL,
 
     CONSTRAINT FK_DESPESA_PRODUTOR FOREIGN KEY (id_produtor)
         REFERENCES TB_PRODUTOR (id_produtor)
@@ -110,46 +125,27 @@ CREATE TABLE TB_FATURAMENTO (
         REFERENCES TB_A_PRODUTOR_PRODUTO (id_produtor_produto)
 );
 
+CREATE TABLE TB_PLANO(
+    id_plano INT IDENTITY (1,1)
+        CONSTRAINT PK_ID_PLANO PRIMARY KEY,
+    tp_plano CHAR(1) NOT NULL
+        CONSTRAINT CK_ASSINATURA_PLANO CHECK (tp_plano IN ('P', 'G'))
+);
+
 CREATE TABLE TB_ASSINATURA (
     id_assinatura INT IDENTITY (1,1)
         CONSTRAINT PK_ID_ASSINATURA PRIMARY KEY,
     id_usuario INT NOT NULL,
-    tp_plano CHAR(1) NOT NULL
-        CONSTRAINT CK_ASSINATURA_PLANO CHECK (tp_plano IN ('P', 'G')),
+    id_plano INT NOT NULL,
     dt_inicio DATE NOT NULL,
     dt_final DATE NOT NULL,
     st_assinatura CHAR(1) NOT NULL
         CONSTRAINT CK_ASSINATURA_STATUS CHECK (st_assinatura IN ('A', 'I')),
 
     CONSTRAINT FK_ASSINATURA_USUARIO FOREIGN KEY (id_usuario)
-        REFERENCES TB_USUARIO (id_usuario)
-);
-
-CREATE TABLE TB_CONVERSA (
-    id_conversa INT IDENTITY (1,1)
-        CONSTRAINT PK_ID_CONVERSA PRIMARY KEY,
-    id_usuario INT NOT NULL,
-    id_produtor INT NOT NULL,
-    dt_inicio DATE NOT NULL,
-
-    CONSTRAINT FK_CONVERSA_USUARIO FOREIGN KEY (id_usuario)
         REFERENCES TB_USUARIO (id_usuario),
-    CONSTRAINT FK_CONVERSA_PRODUTOR FOREIGN KEY (id_produtor)
-        REFERENCES TB_PRODUTOR (id_produtor)
-);
-
-CREATE TABLE TB_MENSAGEM (
-    id_mensagem INT IDENTITY (1,1)
-        CONSTRAINT PK_ID_MENSAGEM PRIMARY KEY,
-    id_conversa INT NOT NULL,
-    id_remetente INT NOT NULL,
-    ds_mensagem TEXT NOT NULL,
-    dt_envio DATETIME NOT NULL,
-
-    CONSTRAINT FK_MENSAGEM_CONVERSA FOREIGN KEY (id_conversa)
-        REFERENCES TB_CONVERSA (id_conversa),
-    CONSTRAINT FK_MENSAGEM_REMETENTE FOREIGN KEY (id_remetente)
-        REFERENCES TB_USUARIO (id_usuario)
+    CONSTRAINT FK_ASSINATURA_PLANO FOREIGN KEY (id_plano)
+        REFERENCES TB_PLANO (id_plano)
 );
 
 CREATE TABLE TB_PEDIDO (
@@ -173,8 +169,6 @@ CREATE TABLE TB_A_ITEM_PEDIDO (
     id_pedido INT,
     id_produto INT,
     qt_item INT NOT NULL,
-    vl_unitario DECIMAL(6,2) NOT NULL
-CONSTRAINT CK_ITEM_PEDIDO_UNITARIO CHECK (vl_unitario IN ('+', '-')),
 
     CONSTRAINT PK_ITEM_PEDIDO PRIMARY KEY (id_item_pedido, id_pedido, id_produto),
     CONSTRAINT FK_ITEM_PEDIDO_PEDIDO FOREIGN KEY (id_pedido)
