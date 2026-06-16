@@ -51,17 +51,17 @@ CREATE TABLE TB_PRODUTO (
         REFERENCES TB_CATEGORIA (id_categoria)
 );
 
-CREATE TABLE TB_ENDERECO (
-    id_endereco INT IDENTITY (1,1)
+CREATE TABLE TB_LOCALIZACAO_PROPRIEDADE (
+    id_localizacao_propriedade INT IDENTITY (1,1)
         CONSTRAINT PK_ID_ENDERECO PRIMARY KEY,
     nm_cidade VARCHAR(35) NOT NULL,
     nm_bairro VARCHAR(65) NOT NULL,
     nm_rua VARCHAR(45) NOT NULL,
     nr_casa INT NOT NULL
         CONSTRAINT DF_PROPRIEDADE_CASA DEFAULT 'S/N',
-    nr_longitude DECIMAL(9,6) NOT NULL
+    nr_longitude DECIMAL(10,8) NOT NULL
         CONSTRAINT CK_PROPRIEDADE_LONGITUDE CHECK (nr_longitude IN ('+', '-'),
-    nr_latitude DECIMAL(9,6) NOT NULL
+    nr_latitude DECIMAL(10,8) NOT NULL
         CONSTRAINT CK_PROPRIEDADE_LATITUDE CHECK (nr_latitude IN ('+', '-')
 );
 
@@ -69,7 +69,7 @@ CREATE TABLE TB_PROPRIEDADE (
     id_propriedade INT IDENTITY (1,1)
         CONSTRAINT PK_ID_PROPRIEDADE PRIMARY KEY,
     id_produtor INT NOT NULL,
-    id_endereco INT NOT NULL,
+    id_localizacao_propriedade INT NOT NULL,
     nm_propriedade VARCHAR(50) NOT NULL
         CONSTRAINT UN_PROPRIEDADE_NOME UNIQUE,
     tm_propriedade DECIMAL (7,2)
@@ -77,8 +77,8 @@ CREATE TABLE TB_PROPRIEDADE (
 
     CONSTRAINT FK_PROPRIEDADE_PRODUTOR FOREIGN KEY (id_produtor)
         REFERENCES TB_PRODUTOR (id_produtor),
-    CONSTRAINT FK_PROPRIEDADE_ENDERECO FOREIGN KEY (id_endereco)
-        REFERENCES TB_ENDERECO (id_endereco)
+    CONSTRAINT FK_PROPRIEDADE_LOCALIZACAO FOREIGN KEY (id_localizacao_propriedade)
+        REFERENCES TB_ENDERECO (id_localizacao_propriedade)
 
 );
 
@@ -107,9 +107,9 @@ CREATE TABLE TB_A_PRODUTOR_PRODUTO (
         CONSTRAINT CK_PRODUTOR_PRODUTO_VALOR CHECK (vl_produto IN ('+', '-')),
 
     CONSTRAINT PK_PRODUTOR_PRODUTO PRIMARY KEY (id_produtor_produto, id_produtor, id_produto),
-    CONSTRAINT FK_PRODUTOR_PRODUTO_PRODUTOR FOREIGN KEY (id_produtor)
+    CONSTRAINT PF_PRODUTOR_A_PRODUTO_PRODUTOR FOREIGN KEY (id_produtor)
         REFERENCES TB_PRODUTOR (id_produtor),
-    CONSTRAINT FK_PRODUTOR_PRODUTO_PRODUTO FOREIGN KEY (id_produto)
+    CONSTRAINT PF_PRODUTO_A_PRODUTOR_PRODUTO FOREIGN KEY (id_produto)
         REFERENCES TB_PRODUTO (id_produto)
 );
 
@@ -129,7 +129,12 @@ CREATE TABLE TB_PLANO(
     id_plano INT IDENTITY (1,1)
         CONSTRAINT PK_ID_PLANO PRIMARY KEY,
     tp_plano CHAR(1) NOT NULL
-        CONSTRAINT CK_ASSINATURA_PLANO CHECK (tp_plano IN ('P', 'G'))
+        CONSTRAINT CK_PLANO_TIPO CHECK (tp_plano IN ('P', 'G')),
+    vl_plano DECIMAL (6,2)
+        CONSTRAINT CK_PLANO_VALOR CHECK (vl_plano >= 0),
+    ds_plano TEXT,
+    st_ativo CHAR (1)
+        CONSTRAINT CK_PLANO_ATIVO CHECK (st_ativo IN ('A', 'I'))
 );
 
 CREATE TABLE TB_ASSINATURA (
@@ -164,17 +169,25 @@ CREATE TABLE TB_PEDIDO (
         REFERENCES TB_PRODUTOR (id_produtor)
 );
 
+CREATE TABLE TB_REGISTRO_VENDA (
+    id_registro_venda INT IDENTITY (1,1)
+        CONSTRAINT PK_REGISTRO_VENDA PRIMARY KEY
+);
+
 CREATE TABLE TB_A_ITEM_PEDIDO (
     id_item_pedido INT IDENTITY (1,1),
     id_pedido INT,
     id_produto INT,
+    id_registro_venda INT,
     qt_item INT NOT NULL,
 
     CONSTRAINT PK_ITEM_PEDIDO PRIMARY KEY (id_item_pedido, id_pedido, id_produto),
-    CONSTRAINT FK_ITEM_PEDIDO_PEDIDO FOREIGN KEY (id_pedido)
+    CONSTRAINT PF_PEDIDO_A_ITEM_PEDIDO FOREIGN KEY (id_pedido)
         REFERENCES TB_PEDIDO (id_pedido),
-    CONSTRAINT FK_ITEM_PEDIDO_PRODUTO FOREIGN KEY (id_produto)
+    CONSTRAINT PF_ITEM_PEDIDO_PRODUTO FOREIGN KEY (id_produto)
         REFERENCES TB_PRODUTO (id_produto)
+    CONSTRAINT FK_ITEM_PEDIDO_REGISTRO FOREIGN KEY (id_registro_venda)
+        REFERENCES TB_REGISTRO_VENDA (id_registro_venda)
 );
 
   
